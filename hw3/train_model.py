@@ -6,9 +6,23 @@ from keras import Sequential
 from keras.layers import Flatten, Embedding, Dense
 
 def build_model(word_types, pos_types, outputs):
-    # TODO: Write this function for part 3
+    """
+    - One Embedding layer
+        - the input_dimension should be the number possible words
+        - the input_length is the number of words using this same embedding layer This should be 6, because we use the 3 top-word on the stack and the 3 next words on the buffer. 
+        - The output_dim of the embedding layer should be 32.
+    - A Dense hidden layer of 100 units using relu activation. (note that you want to Flatten the output of the embedding layer first).  
+    - A Dense hidden layer of 10 units using relu activation. 
+    - An output layer using softmax activation.
+    """
+
     model = Sequential()
-    #model.add(...)
+    model.add(Embedding(word_types, 32, input_length=6))
+    model.add(Flatten())
+    model.add(Dense(100, activation='relu'))
+    model.add(Dense(10, activation='relu'))
+    model.add(Dense(outputs, activation='softmax'))
+    
     model.compile(keras.optimizers.Adam(lr=0.01), loss="categorical_crossentropy")
     return model
 

@@ -21,9 +21,28 @@ class Parser(object):
         state = State(range(1,len(words)))
         state.stack.append(0)    
 
-        while state.buffer: 
-            pass
-            # TODO: Write the body of this loop for part 4 
+        while state.buffer:
+            inp = self.extractor.get_input_representation(words, pos, state)
+            output = self.model.predict(inp.reshape(1,-1))
+            
+            """
+                Arc-left or Arc-right are not permitted the stack is empty.
+                Shifting the only word out of the buffer is also illegal, unless the stack is empty.
+                Finally, the root node must never be the target of a left-arc. 
+            """
+            for idx in output[0].argsort()[::-1]:
+                transition, label = self.output_labels[idx]
+                if transition == 'shift':
+                    if len(state.buffer) == 1 and len(state.stack) > 0 :
+                        continue
+                else:
+                    if len(state.stack) == 0: continue
+                    if transition == 'left-arc' and state.stack[-1] == 0: continue
+                break
+                
+            if transition == 'shift': state.shift()
+            elif transition == 'left-arc': state.left_arc(label)
+            else: state.right_arc(label)
 
         result = DependencyStructure()
         for p,c,r in state.deps: 

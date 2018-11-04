@@ -27,8 +27,6 @@ class State(object):
     def __repr__(self):
         return "{},{},{}".format(self.stack, self.buffer, self.deps)
 
-   
-
 def apply_sequence(seq, sentence):
     state = State(sentence)
     for rel, label in seq:
@@ -115,13 +113,33 @@ class FeatureExtractor(object):
         return vocab     
 
     def get_input_representation(self, words, pos, state):
-        # TODO: Write this method for Part 2
-        return np.zeros(6)
+        #<CD> stands for any number (anything tagged with the POS tag CD)
+        #<NNP> stands for any proper name (anything tagged with the POS tag NNP)
+        #<UNK> stands for unknown words (in the training data, any word that appears only once)
+        #<ROOT> is a special root symbol (the word associated with the word 0, which is initially placed on the stack of the dependency parser)
+        #<NULL> is used to pad context windows.
+        
+        inpt = np.ones(6, dtype=int) * self.word_vocab['<NULL>']
+        
+        def getWord(idx):
+            word = words[idx]
+            if idx == 0:            word = '<ROOT>'
+            elif pos[idx] == 'NNP': word = '<NNP>'
+            elif pos[idx] == 'CD':  word = '<CD>'
+            return self.word_vocab.get(word, self.word_vocab['<UNK>'])
+        
+        for n, idx in enumerate(state.stack[:-4:-1]):
+            inpt[n] = getWord(idx)
+        
+        for n, idx in enumerate(state.buffer[:-4:-1]):
+            inpt[3+n] = getWord(idx)            
+        
+        return inpt
 
-    def get_output_representation(self, output_pair):  
-        # TODO: Write this method for Part 2
-        return np.zeros(91)
-
+    def get_output_representation(self, output_pair):
+        return keras.utils.to_categorical(
+            self.output_labels[output_pair],
+            num_classes=91, dtype=int)
      
     
 def get_training_matrices(extractor, in_file):
