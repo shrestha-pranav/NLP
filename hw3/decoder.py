@@ -26,9 +26,9 @@ class Parser(object):
             output = self.model.predict(inp.reshape(1,-1))
             
             """
-                Arc-left or Arc-right are not permitted the stack is empty.
-                Shifting the only word out of the buffer is also illegal, unless the stack is empty.
-                Finally, the root node must never be the target of a left-arc. 
+            Arc-left or Arc-right are not permitted the stack is empty.
+            Shifting the only word out of the buffer is also illegal, unless the stack is empty.
+            Finally, the root node must never be the target of a left-arc. 
             """
             for idx in output[0].argsort()[::-1]:
                 transition, label = self.output_labels[idx]
@@ -37,11 +37,11 @@ class Parser(object):
                         continue
                 else:
                     if len(state.stack) == 0: continue
-                    if transition == 'left-arc' and state.stack[-1] == 0: continue
+                    if transition == 'left_arc' and state.stack[-1] == 0: continue
                 break
                 
             if transition == 'shift': state.shift()
-            elif transition == 'left-arc': state.left_arc(label)
+            elif transition == 'left_arc': state.left_arc(label)
             else: state.right_arc(label)
 
         result = DependencyStructure()
